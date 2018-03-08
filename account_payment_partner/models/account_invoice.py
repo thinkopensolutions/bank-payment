@@ -13,9 +13,16 @@ class AccountInvoice(models.Model):
         comodel_name='account.payment.mode', string="Payment Mode",
         ondelete='restrict',
         readonly=True, states={'draft': [('readonly', False)]})
+    payment_method_id = fields.Many2one(
+        'account.payment.method', compute='_get_payment_method_id', string='Payment Method', required=True,
+        ondelete='restrict')
     bank_account_required = fields.Boolean(
-        related='payment_mode_id.payment_method_id.bank_account_required',
+        related='payment_method_id.bank_account_required',
         readonly=True)
+
+    @api.one
+    def _get_payment_method_id(self):
+        return self.payment_mode_id.payment_method_id.id
 
     @api.onchange('partner_id', 'company_id')
     def _onchange_partner_id(self):
